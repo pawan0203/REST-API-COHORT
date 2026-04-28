@@ -27,7 +27,7 @@ const userschema = new mongoose.Schema({
         default: "user"
     },
     verificationToken: { type: String, select: false },
-    refreshtoken: { type: String, select: false },
+    refreshToken: { type: String, select: false },
     resetpasswordToken: { type: String, select: false },
     resetpasswordExpires: { type: Date, select: false },
 }, { timestamps: true })

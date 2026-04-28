@@ -1,6 +1,6 @@
-import ApiError from "../../../common/config/utils/api-error.js"
+import ApiError from "../../common/config/utils/api-error.js"
 import User from "./auth.model.js"
-import {generateResetToken} from "../../../common/utils/jwt.utils.js"
+import {generateResetToken} from "../../common/utils/jwt.utils.js"
 
 const register = async({ name, email, password, role })=> {
     const existing = await user.findOne({ email })

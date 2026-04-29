@@ -19,6 +19,10 @@ class ApiError extends Error {
   static forbidden(message = "Not verified") {
     return new ApiError(403, message);
   }
+
+  static notfound(message = "Not Found") {
+    return new ApiError(404, message);
+  }
 }
 
 export default ApiError

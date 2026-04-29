@@ -1,7 +1,8 @@
 import ApiError from "../../common/config/utils/api-error.js"
 import User from "./auth.model.js"
-import {generateResetToken, genrateAccessToken, genrateRefreshToken, verifyRefreshToken} from "../../common/utils/jwt.utils.js"
+import {generateResetToken, genrateAccessToken, genrateRefreshToken, genrateResetToken, verifyRefreshToken} from "../../common/utils/jwt.utils.js"
 import validate from "../../common/config/middleware/validate.middleware.js";
+import { decode } from "jsonwebtoken";
 
 const hashToken = (token) =>
     crypto.createHash("sha256").update(rawToken).digest("hex");
@@ -57,12 +58,58 @@ const login = async ({ email, password }) => {
 }
 
 
-const refresh = async (token)=>{
+const refresh = async (token) => {
     if (!token) throw ApiError.unauthorized("Refresh token missing")
-    verifyRefreshToken(token)
+    const decoded = verifyRefreshToken(token)
+
+    const user = await user.findByID(decoded.id).select("+refreshToken");
+    if (!user) throw ApiError.unauthorized("User not found");
+
+    if (user.refreshToken !== hashToken(token)) {
+        throw ApiError.unauthorized("Invalid refresh token");
+    }
+
+    const accessToken = genrateAccessToken({ id: user._id, role: user.role });
+    
+    const newRefreshToken = genrateRefreshToken({ id: user._id });
+
+    user.refreshToken = hashToken(newRefreshToken)
+    await user.save({ validateBeforeSave: false })
+    const userobj = user.toObject();
+    delete userobj.refreshToken
+
+    return{accessToken, newRefreshToken}
 }
 
+const logout = async (userId) => {
+    await user.findByIdAndUpdate(userId,{refreshToken: null})
+}
 
-// continue 2.09 
+const forgotPassword = async (email) => {
+    const user = await user.findOne({ email })
+    if (!user) throw ApiError.notfound("no user found  with that email");
+
+    const { rawToken, hashedToken } = genrateResetToken()
+    user.resetpasswordToken = hashedToken 
+    user.resetpasswordExpires = Date.now() + 15 * 60 * 1000
+    
+    await user.save()
+
+    // Todo: mail bhejna nhi aata
+
+    // reset password
+}
+    
+ const resetPassword = async (email, currentPassword, newPassword) => {
+     const user = await User.findOne({ email }.select("+password"));
+     if (!user) throw ApiError.notfound("no user found  with that email");
+     
+     if (currentPassword !== user.password)
+         throw ApiError.unauthorized("Password not matched");
+     user.password = newPassword
+     await user.save()
+    }
+
+
 
 export {register}

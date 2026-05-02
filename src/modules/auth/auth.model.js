@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { use } from "react";
+import bcrypt from "bcryptjs";
 
 const userschema = new mongoose.Schema({
   name: {
@@ -31,5 +33,13 @@ const userschema = new mongoose.Schema({
     resetpasswordToken: { type: String, select: false },
     resetpasswordExpires: { type: Date, select: false },
 }, { timestamps: true })
+
+
+userschema.pre("save", async function (next) { 
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+})
+
 
 export default mongoose.model("User", userschema)

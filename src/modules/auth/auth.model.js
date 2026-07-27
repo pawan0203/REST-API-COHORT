@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { use } from "react";
 import bcrypt from "bcryptjs";
 
 const userschema = new mongoose.Schema({
@@ -8,18 +7,18 @@ const userschema = new mongoose.Schema({
     trim: true,
     minlength: 2,
     maxlength: 50,
-    require: [true, "Name is required"]
+    required: [true, "Name is required"]
   },
   email: {
     type: String,
     trim: true,
-    require: [true, "Name is required"],
+    required: [true, "Email is required"],
     unique: true,
     lowercase: true,
     },
-    password: { 
+    password: {
     type: String,
-    require: [true, "Password is required"],
+    required: [true, "Password is required"],
     minlength: 8,
     select: false
      },
